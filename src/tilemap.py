@@ -10,7 +10,7 @@ except:
 
 class TileList:
     def __init__(self, path: str, th: int, tw: int):
-        self.image = load_img(path)
+        self.image: pygame.Surface = load_img(path)
 
         self.height = th
         self.width = tw
@@ -37,36 +37,62 @@ class TileList:
             print(f"Warning: idx '{idx}' not found in TileList.")
 
         return self._tiles[idx]
+    
+class Tile:
+    def __init__(self, img: pygame.Surface, rect: pygame.Rect):
+        self.img: pygame.Surface = img
+        self.rect: pygame.Rect = rect
+        self.x: int = rect.x
+        self.y: int = rect.y
+        self.width: int = rect.width
+        self.height: int = rect.height
+
+    def draw(self, screen: pygame.surface.Surface):
+        screen.blit(self.img, self.rect)
 
 
 class GameMap:
-    def __init__(self, map_path):
+    def __init__(self, map_path, tile_list, scale: int):
         with open(map_path, "r") as f:
             self._map = json.load(f)
+        self.scale = scale
+        self._tile_list: TileList = tile_list
+        self._tiles: list[Tile] = self.create_tiles()
 
     def size(self):
         return (self._map['height'], self._map['width'])
-
-    def draw(self, screen: pygame.surface.Surface, tile_list: TileList, scale: float = 1.0):
-        for layer in self._map['layers']:
-            self._draw_matrix(screen, layer['data'], tile_list, scale)
-
-    def _draw_matrix(self, screen: pygame.surface.Surface, matrix: List[int], tile_list: TileList, scale: float):
+    
+    def create_tiles(self) -> list[Tile]:
+        tiles: list[Tile] = []
+        layer = self._map['layers'][0]['data']
         for i in range(self._map['height']):
             for j in range(self._map['width']):
                 # obtem o tile na posicao (i, j)
                 idx = i * self._map['width'] + j
-                tile = matrix[idx]
+                tile = layer[idx]
 
                 if tile > 0:
-                    img = tile_list.get(tile - 1)
-                    img = pygame.transform.scale(img, (tile_list.width*scale, tile_list.height*scale))
+                    img = self._tile_list.get(tile - 1)
+                    img = pygame.transform.scale(img, (self._tile_list.width*self.scale, self._tile_list.height*self.scale))
+                    px = j * self._tile_list.width*self.scale
+                    py = i * self._tile_list.height*self.scale
+                    rect = pygame.rect.Rect(px, py, self._tile_list.width*self.scale, self._tile_list.height*self.scale)
 
-                    # desenha o tile na tela
-                    px = j * tile_list.width*scale
-                    py = i * tile_list.height*scale
-                    rect = pygame.rect.Rect(px, py, tile_list.width*scale, tile_list.height*scale)
-                    screen.blit(img, rect)
+                    new_tile = Tile(img, rect)
+                    tiles.append(new_tile)
+        return tiles
+
+
+    def draw(self, screen: pygame.surface.Surface):
+        for tile in self._tiles:
+            tile.draw(screen)
+
+    def detect_tile_collision(self, entity_rect: pygame.Rect) -> Tile | None:
+        for tile in self._tiles:
+            if tile.rect.colliderect(entity_rect):
+                return tile
+        return None
+
 
 
 def main():
@@ -75,16 +101,16 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((30 * TILE_SIZE*SCALE, 20 * TILE_SIZE*SCALE))
 
-    level = GameMap("../projetos/muiraquita/maps/fase0.json")
     tile_list = TileList("../projetos/muiraquita/sprites/nature_elements/nature_tileset.png", TILE_SIZE, TILE_SIZE)
-
+    level = GameMap("../projetos/muiraquita/maps/fase0.json", tile_list=tile_list)
+    
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
         screen.fill((0, 0, 0))
-        level.draw(screen, tile_list, scale=SCALE)
+        level.draw(screen)
         pygame.display.flip()
 
 
