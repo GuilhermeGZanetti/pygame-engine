@@ -29,19 +29,19 @@ class Animator:
                 self.current_animation = "jump"
                 self.frame_index = 0
                 self.frames = self.jump_frames
-                self.time_since_last_frame = 0
+                self.time_since_last_frame = 1
         elif is_running: 
             if self.current_animation != "run":
                 self.current_animation = "run"
                 self.frame_index = 0
                 self.frames = self.run_frames
-                self.time_since_last_frame = 0
+                self.time_since_last_frame = 1
         else:
             if self.current_animation != "idle":
                 self.current_animation = "idle"
                 self.frame_index = 0
                 self.frames = self.idle_frames
-                self.time_since_last_frame = 0
+                self.time_since_last_frame = 1
 
         # Flip the image if moving left/right
         if velocity.x < -0.5 and self.facing_right:
