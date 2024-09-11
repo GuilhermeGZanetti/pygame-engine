@@ -1,5 +1,6 @@
 from pygame import Rect, Surface
 import pygame
+from animator import Animator
 from config import Config
 from src.tilemap import GameMap, Tile
 from src.utils import load_img
@@ -8,24 +9,21 @@ import time
 
 
 class Frog:
-    def __init__(self, sprite_sheet, px: int, py: int, size: float = 1) -> None:
+    def __init__(self, run_sprite_sheet, idle_sprite_sheet, px: int, py: int, size: float = 1) -> None:
         self.last_time: float = time.time()
         self.delta_time: float = 0
-        self.sprite_sheet: Surface = load_img(sprite_sheet)
-        self.rect: Rect = pygame.rect.Rect(px, py, Config.FROG_WIDTH*size, Config.FROG_HEIGHT*size)
+        self.run_sprite_sheet: Surface = load_img(run_sprite_sheet)
+        self.idle_sprite_sheet: Surface = load_img(idle_sprite_sheet)
+        self.rect: Rect = pygame.rect.Rect(px, py, Config.FROG_WIDTH * size, Config.FROG_HEIGHT * size)
         self.velocity: Vector2D = Vector2D(0, 0)
         self.position: Vector2D = Vector2D(px, py)
 
-        self.facing_right = True
+        # Animation
+        self.run_frames = self.init_sprite_sheet(self.run_sprite_sheet, 7, size)
+        self.idle_frames = self.init_sprite_sheet(self.idle_sprite_sheet, 8, size)
+        self.jump_frames = self.init_sprite_sheet(self.run_sprite_sheet, 1, size, offset=3)
 
-        self.current_image: Surface = self.sprite_sheet.subsurface(
-            (0 * Config.FROG_WIDTH + 10, 
-             0 * Config.FROG_HEIGHT + 10, 
-             Config.FROG_WIDTH, 
-             Config.FROG_HEIGHT)
-        )
-        # Increase image size
-        self.current_image = pygame.transform.scale(self.current_image, (Config.FROG_WIDTH * size, Config.FROG_HEIGHT * size))
+        self.animator = Animator(run_frames=self.run_frames, idle_frames=self.idle_frames, jump_frames=self.jump_frames, starting_animation="idle")
 
 
     def update(self, screen: Surface, level: GameMap) -> None:
@@ -38,6 +36,7 @@ class Frog:
         self.move_and_apply_collisions(level=level)
         self.verify_screen_bounds()
 
+        self.animate(level=level)
         self.draw(screen)
     
 
@@ -48,8 +47,12 @@ class Frog:
 
         if pressed_keys[pygame.K_LEFT]:
             self.velocity.x = -Config.FROG_SPEED
+            self.is_moving = True
         elif pressed_keys[pygame.K_RIGHT]:
             self.velocity.x = Config.FROG_SPEED
+            self.is_moving = True
+        else:
+            self.is_moving = False
 
         if pressed_keys[pygame.K_UP]:
             if not self.is_jumping(level):
@@ -59,19 +62,30 @@ class Frog:
         self.velocity.y = -Config.JUMP_SPEED
 
 
+    #### ANIMATION ####
+    def animate(self, level: GameMap) -> None:
+        self.animator.update(
+            velocity=self.velocity, 
+            is_jumping=self.is_jumping(level), 
+            delta_time=self.delta_time, 
+            is_running=self.is_moving
+        )
+            
+
+    def init_sprite_sheet(self, image: Surface, number_frames: int, size: float, offset: int = 0) -> list[Surface]:
+        frames = [
+            image.subsurface(((x * 2 * Config.FROG_WIDTH)+10, 10, Config.FROG_WIDTH, Config.FROG_HEIGHT))
+            for x in range(offset, offset+number_frames) 
+        ]
+        frames = [pygame.transform.scale(frame, (Config.FROG_WIDTH * size, Config.FROG_HEIGHT * size)) for frame in frames]
+
+        return frames
 
 
     #### DRAWING ####
 
     def draw(self, screen: Surface) -> None:
-        # Invert image depending on velocity.x
-        if self.velocity.x < -0.5 and self.facing_right:
-            self.current_image = pygame.transform.flip(self.current_image, True, False)
-            self.facing_right = False
-        if self.velocity.x > 0.5 and not self.facing_right:
-            self.current_image = pygame.transform.flip(self.current_image, True, False)
-            self.facing_right = True
-        screen.blit(self.current_image, self.rect)
+        screen.blit(self.animator.current_image, self.rect)
         # Draw red rectangle for debug
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
 
@@ -148,8 +162,6 @@ class Frog:
 
     def is_jumping(self, level: GameMap) -> bool:
         collided_tile: Tile = level.detect_tile_collision(pygame.rect.Rect(self.rect.x, self.rect.y + 2, self.rect.width, self.rect.height))
-        if collided_tile:
-            print(f"Collided top: {collided_tile.rect.top} == {self.rect.bottom}")
         if collided_tile and collided_tile.rect.top < self.rect.bottom+2 and collided_tile.rect.top > self.rect.bottom-2:
             return False
         return True
