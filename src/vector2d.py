@@ -2,9 +2,9 @@ import math
 
 
 class Vector2D:
-    def __init__(self, x=0, y=0):
-        self.x = x
-        self.y = y
+    def __init__(self, x:float = 0, y:float = 0):
+        self.x: float = x
+        self.y: float = y
 
     def __add__(self, outro_vetor):
         return Vector2D(self.x + outro_vetor.x, self.y + outro_vetor.y)
