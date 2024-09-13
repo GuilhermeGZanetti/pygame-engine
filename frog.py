@@ -2,6 +2,7 @@ from pygame import Rect, Surface
 import pygame
 from animator import Animator
 from config import Config
+from grappling_tongue import GrapplingTongue
 from src.tilemap import GameMap, Tile
 from src.utils import load_img
 from src.vector2d import Vector2D
@@ -19,6 +20,8 @@ class Frog:
         self.max_velocity = Config.FROG_SPEED
         self.position: Vector2D = Vector2D(px, py)
 
+        self.grappling_tongue = GrapplingTongue(self)
+
         # Animation
         self.run_frames = self.init_sprite_sheet(self.run_sprite_sheet, 7, size)
         self.idle_frames = self.init_sprite_sheet(self.idle_sprite_sheet, 8, size)
@@ -27,11 +30,14 @@ class Frog:
         self.animator = Animator(run_frames=self.run_frames, idle_frames=self.idle_frames, jump_frames=self.jump_frames, starting_animation="idle")
 
 
+
     def update(self, screen: Surface, level: GameMap) -> None:
         self.delta_time = time.time() - self.last_time
         self.last_time = time.time()
 
         self.handle_input(level)
+
+        self.grappling_tongue.update(screen=screen, level=level)
 
         self.apply_physics(level=level)
         self.move_and_apply_collisions(level=level)
@@ -52,6 +58,16 @@ class Frog:
             self.command_move(right=True)
         else:
             self.is_moving = False
+
+        if pressed_keys[pygame.K_z]:
+            if not self.grappling_tongue.is_moving() and not self.grappling_tongue.is_extended():
+                direction = Vector2D(-int(pressed_keys[pygame.K_LEFT])+int(pressed_keys[pygame.K_RIGHT]),
+                                     -int(pressed_keys[pygame.K_UP])+int(pressed_keys[pygame.K_DOWN]))
+                if direction.x == 0 and direction.y == 0:
+                    direction.x = 1 if self.animator.facing_right else -1
+                self.grappling_tongue.launch_tongue(direction)
+            elif not self.grappling_tongue.is_moving():
+                self.grappling_tongue.retrieve_tongue()
 
         if pressed_keys[pygame.K_UP]:
             if not self.is_jumping(level):

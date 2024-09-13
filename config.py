@@ -26,3 +26,6 @@ class Config(BaseConfig):
     FROG_SPEED = 100
     FROG_ACCELERATION = 700
     JUMP_SPEED = 500
+
+    MAX_TONGUE_LENGTH = 300
+    TONGUE_VELOCITY = 1000

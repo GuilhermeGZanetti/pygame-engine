@@ -2,6 +2,9 @@ import pygame
 from typing import List
 import sys
 import json
+
+from src.line import Line
+from src.vector2d import Vector2D
 try:
     from utils import load_img
 except:
@@ -91,6 +94,14 @@ class GameMap:
         for tile in self._tiles:
             if tile.rect.colliderect(entity_rect):
                 return tile
+        return None
+    
+    def detect_line_tile_collision(self, line: Line) -> Vector2D | None:
+        for tile in self._tiles:
+            positions = tile.rect.clipline(line.start_point.as_tuple(), line.end_point.as_tuple())
+            if positions:
+                pos1 = positions[0]
+                return Vector2D(pos1[0], pos1[1])
         return None
 
 

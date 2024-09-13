@@ -11,6 +11,18 @@ class Vector2D:
 
     def __sub__(self, outro_vetor):
         return Vector2D(self.x - outro_vetor.x, self.y - outro_vetor.y)
+    
+    def __mul__(self, other):
+        new_vec = Vector2D(self.x, self.y)
+        new_vec.x *= other
+        new_vec.y *= other
+        return new_vec
+    
+    def __rmul__(self, other):
+        new_vec = Vector2D(self.x, self.y)
+        new_vec.x *= other
+        new_vec.y *= other
+        return new_vec
 
     def __str__(self):
         return f"(x={self.x:.2f}, y={self.y:.2f})"
@@ -23,3 +35,10 @@ class Vector2D:
 
     def as_tuple(self):
         return (self.x, self.y)
+    
+    def normalize(self):
+        size = self.tamanho()
+        self.x = self.x / size
+        self.y = self.y / size
+
+        return self
