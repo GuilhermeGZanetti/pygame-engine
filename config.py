@@ -21,7 +21,8 @@ class Config(BaseConfig):
 
     #Gameplay Frog
     GRAVITY = 700
-    DRAG = 1/100
-    FIXED_DRAG = 100
+    DRAG = 1/500
+    FIXED_DRAG = 5
     FROG_SPEED = 100
+    FROG_ACCELERATION = 700
     JUMP_SPEED = 500

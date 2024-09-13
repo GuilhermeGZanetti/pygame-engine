@@ -16,6 +16,7 @@ class Frog:
         self.idle_sprite_sheet: Surface = load_img(idle_sprite_sheet)
         self.rect: Rect = pygame.rect.Rect(px, py, Config.FROG_WIDTH * size, Config.FROG_HEIGHT * size)
         self.velocity: Vector2D = Vector2D(0, 0)
+        self.max_velocity = Config.FROG_SPEED
         self.position: Vector2D = Vector2D(px, py)
 
         # Animation
@@ -32,7 +33,7 @@ class Frog:
 
         self.handle_input(level)
 
-        self.apply_physics()
+        self.apply_physics(level=level)
         self.move_and_apply_collisions(level=level)
         self.verify_screen_bounds()
 
@@ -46,17 +47,23 @@ class Frog:
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[pygame.K_LEFT]:
-            self.velocity.x = -Config.FROG_SPEED
-            self.is_moving = True
+            self.command_move(right=False)
         elif pressed_keys[pygame.K_RIGHT]:
-            self.velocity.x = Config.FROG_SPEED
-            self.is_moving = True
+            self.command_move(right=True)
         else:
             self.is_moving = False
 
         if pressed_keys[pygame.K_UP]:
             if not self.is_jumping(level):
                 self.start_jump()
+    
+    def command_move(self, right: bool):
+        flag_sign = 1 if right else -1
+        velocity = self.velocity.x + flag_sign * Config.FROG_ACCELERATION * self.delta_time
+        if abs(velocity) < self.max_velocity:
+            self.velocity.x = velocity
+        self.is_moving = True
+
             
     def start_jump(self) -> None:
         self.velocity.y = -Config.JUMP_SPEED
@@ -94,22 +101,23 @@ class Frog:
 
     #### PHYSICS ####
 
-    def apply_physics(self) -> None:
+    def apply_physics(self, level: GameMap) -> None:
+        fixed_drag = Config.FIXED_DRAG if self.is_jumping(level) else Config.FIXED_DRAG * 50
         if self.velocity.x > 0:
-            self.velocity.x -= (Config.DRAG * (self.velocity.x)/2 + Config.FIXED_DRAG) * self.delta_time
+            self.velocity.x -= (Config.DRAG * (self.velocity.x)/2 + fixed_drag) * self.delta_time
             if self.velocity.x < 0:
                 self.velocity.x = 0
         elif self.velocity.x < 0:
-            self.velocity.x += (Config.DRAG * (self.velocity.x)/2 + Config.FIXED_DRAG) * self.delta_time
+            self.velocity.x += (Config.DRAG * (self.velocity.x)/2 + fixed_drag) * self.delta_time
             if self.velocity.x > 0:
                 self.velocity.x = 0
         
         if self.velocity.y > 0:
-            self.velocity.y -= (Config.DRAG * (self.velocity.y)/2 + Config.FIXED_DRAG) * self.delta_time
+            self.velocity.y -= (Config.DRAG * (self.velocity.y)/2 + fixed_drag) * self.delta_time
             if self.velocity.y < 0:
                 self.velocity.y = 0
         elif self.velocity.y < 0:
-            self.velocity.y += (Config.DRAG * (self.velocity.y)/2 + Config.FIXED_DRAG) * self.delta_time
+            self.velocity.y += (Config.DRAG * (self.velocity.y)/2 + fixed_drag) * self.delta_time
             if self.velocity.y > 0:
                 self.velocity.y = 0
         
