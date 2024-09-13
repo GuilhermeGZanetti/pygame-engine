@@ -27,6 +27,11 @@ class GameScene(BaseScene):
             if event.type == pygame.QUIT:
                 sair = True
 
+        pressed_keys = pygame.key.get_pressed()
+        if pressed_keys[pygame.K_r]:
+            self.exit_scene = True
+            self.next_scene = GameScene(screen=self.screen)
+
         # termina o jogo se acabar o tempo ou se a pessoa clicar
         # no botao de sair
         if (sair):

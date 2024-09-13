@@ -60,14 +60,18 @@ class Frog:
             self.is_moving = False
 
         if pressed_keys[pygame.K_z]:
-            if not self.grappling_tongue.is_moving() and not self.grappling_tongue.is_extended():
-                direction = Vector2D(-int(pressed_keys[pygame.K_LEFT])+int(pressed_keys[pygame.K_RIGHT]),
-                                     -int(pressed_keys[pygame.K_UP])+int(pressed_keys[pygame.K_DOWN]))
-                if direction.x == 0 and direction.y == 0:
-                    direction.x = 1 if self.animator.facing_right else -1
-                self.grappling_tongue.launch_tongue(direction)
-            elif not self.grappling_tongue.is_moving():
-                self.grappling_tongue.retrieve_tongue()
+            if self.pressed_tongue == False:
+                self.pressed_tongue = True
+                if not self.grappling_tongue.is_moving() and not self.grappling_tongue.is_extended():
+                    direction = Vector2D(-int(pressed_keys[pygame.K_LEFT])+int(pressed_keys[pygame.K_RIGHT]),
+                                         -int(pressed_keys[pygame.K_UP])+int(pressed_keys[pygame.K_DOWN]))
+                    if direction.x == 0 and direction.y == 0:
+                        direction.x = 1 if self.animator.facing_right else -1
+                    self.grappling_tongue.launch_tongue(direction)
+                elif not self.grappling_tongue.is_moving():
+                    self.grappling_tongue.retrieve_tongue()
+        else:
+            self.pressed_tongue = False
 
         if pressed_keys[pygame.K_UP]:
             if not self.is_jumping(level):

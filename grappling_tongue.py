@@ -45,8 +45,7 @@ class GrapplingTongue:
                 self.is_launching = False
                 self.is_launched = True
                 self.line.end_point = collision
-
-            if self.line.length() > Config.MAX_TONGUE_LENGTH:
+            elif self.line.length() > Config.MAX_TONGUE_LENGTH:
                 self.is_launching = False
                 self.is_retrieving = True
             # print(f"Tongue point: {self.direction * (Config.TONGUE_VELOCITY * self.parent.delta_time)} // Direction: {self.direction} // Config: {Config.TONGUE_VELOCITY} // Time: {self.parent.delta_time} // Tongue len: ", self.line.length())
@@ -61,6 +60,8 @@ class GrapplingTongue:
 
             if self.line.length() < 3:
                 self.is_retrieving = False
+                del(self.line)
+                return
             self.line.draw(screen)
         elif self.is_launched:
             self.line.start_point = Vector2D(*self.parent.rect.center)
