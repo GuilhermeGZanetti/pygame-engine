@@ -23,11 +23,23 @@ class Vector2D:
         new_vec.x *= other
         new_vec.y *= other
         return new_vec
+    
+    def __truediv__(self, other):
+        new_vec = Vector2D(self.x, self.y)
+        new_vec.x = new_vec.x / other
+        new_vec.y = new_vec.y / other
+        return new_vec
+    
+    def __neg__(self):
+        return Vector2D(-self.x, -self.y)
 
     def __str__(self):
         return f"(x={self.x:.2f}, y={self.y:.2f})"
 
     def tamanho(self):
+        return math.sqrt(self.x ** 2 + self.y ** 2)
+
+    def length(self):
         return math.sqrt(self.x ** 2 + self.y ** 2)
 
     def angulo(self):
@@ -42,3 +54,6 @@ class Vector2D:
         self.y = self.y / size
 
         return self
+    
+    def dot(self, other_vector):
+        return self.x*other_vector.x + self.y*other_vector.y

@@ -16,7 +16,6 @@ class GameScene(BaseScene):
                            idle_sprite_sheet=Config.FROG_SPRITESHEET_IDLE,
                            px=20, py=20, size=Config.FROG_SCALE)
         
-
         self.font = pygame.font.SysFont(None, 48)
 
 

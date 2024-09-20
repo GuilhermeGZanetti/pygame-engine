@@ -15,6 +15,7 @@ class GrapplingTongue:
         
         self.tongue_point: Vector2D = Vector2D(parent.position.x, parent.position.y)
         self.line: Line | None = None
+        self.tongue_len = None
 
     def is_moving(self):
         return self.is_launching or self.is_retrieving
@@ -45,6 +46,7 @@ class GrapplingTongue:
                 self.is_launching = False
                 self.is_launched = True
                 self.line.end_point = collision
+                self.tongue_len = self.line.length()
             elif self.line.length() > Config.MAX_TONGUE_LENGTH:
                 self.is_launching = False
                 self.is_retrieving = True
@@ -64,7 +66,29 @@ class GrapplingTongue:
                 return
             self.line.draw(screen)
         elif self.is_launched:
-            self.line.start_point = Vector2D(*self.parent.rect.center)
+            # Calculate the vector from the tongue's end point to the parent's position
+            vector_to_parent = Vector2D(*self.parent.rect.center) - self.line.end_point
+            distance = vector_to_parent.length()
+            tension_force = Vector2D(0,0)
+            # Check if the parent is beyond the maximum tongue length
+            # if distance > self.tongue_len:
+            # Get the line direction (from start to end point)
+            line_direction = vector_to_parent.normalize()
+            # Calculate tongue tension (component of gravity in the direction of line_direction)
+            # T = Fcp + Py
+            tangent_velocity = self.parent.physics.velocity.dot(Vector2D(line_direction.y, -line_direction.x).normalize())
+            centripetal_force = (tangent_velocity**2)/distance
+            tension_force = (centripetal_force + Vector2D(0,Config.GRAVITY).dot(-line_direction))*line_direction
+            #Apply force parent
+            self.parent.physics.apply_force(tension_force)
 
-            self.line.draw(screen)
+            # Força de mola na lngua
+            if distance > self.tongue_len:
+                K = 10
+                spring_force = -K*(distance-self.tongue_len)*line_direction
+                self.parent.physics.apply_force(spring_force)
+
+            self.line.start_point = Vector2D(*self.parent.rect.center)
+            self.line.draw(screen)                
+            Line(self.line.start_point, self.line.start_point+tension_force*1/10).draw(screen, color=(0,255,0), width=2)
 
