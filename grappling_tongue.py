@@ -72,6 +72,7 @@ class GrapplingTongue:
                 self.is_launched = True
                 self.line.end_point = collision
                 self.tongue_len = self.line.length()
+                self.parent.audio_manager.play_hit_tongue()
             elif self.line.length() > Config.MAX_TONGUE_LENGTH:
                 self.is_launching = False
                 self.is_retrieving = True

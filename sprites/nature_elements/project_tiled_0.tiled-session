@@ -1,31 +1,83 @@
 {
-    "activeFile": "fase0.tmx",
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "base_tileset.tsx",
     "expandedProjectPaths": [
         "."
     ],
+    "file.lastUsedOpenFilter": "Todos os Ficheiros (*)",
     "fileStates": {
         "base_tileset.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 2
         },
         "fase0.tmx": {
-            "scale": 2.2404166666666665,
+            "scale": 1.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 339.66666666666663,
+                "y": 181.33333333333334
+            }
+        },
+        "fase1.tmx": {
+            "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 240.13390366375305,
-                "y": 159.79170541193974
+                "x": 392.99999999999994,
+                "y": 190
             }
+        },
+        "fase2.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 348.33333333333337,
+                "y": 220.66666666666669
+            }
+        },
+        "forest_tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 4
+        },
+        "general_tileset.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 4
+        },
+        "oca.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 11
         }
     },
     "last.exportedFilePath": "C:/Users/R2/Desktop/TI/Jogos/pygame-engine/maps",
+    "last.externalTilesetPath": "C:/Users/R2/Desktop/TI/Jogos/pygame-engine/sprites/nature_elements",
+    "last.imagePath": "C:/Users/R2/Desktop/TI/Jogos/pygame-engine/sprites",
+    "map.height": 25,
     "map.lastUsedExportFilter": "Ficheiros de mapa JSON (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 45,
     "openFiles": [
         "base_tileset.tsx",
-        "fase0.tmx"
+        "fase0.tmx",
+        "fase1.tmx",
+        "general_tileset.tsx"
     ],
     "project": "project_tiled_0.tiled-project",
     "recentFiles": [
+        "general_tileset.tsx",
+        "fase0.tmx",
+        "fase1.tmx",
         "base_tileset.tsx",
-        "fase0.tmx"
-    ]
+        "forest_tileset.tsx",
+        "oca.tsx"
+    ],
+    "tileset.lastUsedFilter": "Ficheiros de conjunto de tiles Tiled (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
 }

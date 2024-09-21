@@ -60,14 +60,24 @@ class GameMap:
             self._map = json.load(f)
         self.scale = scale
         self._tile_list: TileList = tile_list
-        self._tiles: list[Tile] = self.create_tiles()
+        self._tiles: list[Tile] = self.create_tiles(layer=0)
+        self._ornament: list[Tile] = self.create_tiles(layer=1)
+        self._goal: list[Tile] = self.create_tiles(layer=2)
+        self._player_init_pos = Vector2D(self._map['player_pos'][0], self._map['player_pos'][1])
 
     def size(self):
         return (self._map['height'], self._map['width'])
     
-    def create_tiles(self) -> list[Tile]:
+    def player_initial_position(self) -> tuple[int, int]:
+        return self._player_init_pos.as_tuple()
+    
+    def create_tiles(self, layer: int = 0) -> list[Tile]:
         tiles: list[Tile] = []
-        layer = self._map['layers'][0]['data']
+        try:
+            layer = self._map['layers'][layer]['data']
+        except:
+            print("Fase does not have layer: ", layer)
+            return []
         for i in range(self._map['height']):
             for j in range(self._map['width']):
                 # obtem o tile na posicao (i, j)
@@ -86,9 +96,15 @@ class GameMap:
         return tiles
 
 
+
     def draw(self, screen: pygame.surface.Surface):
         for tile in self._tiles:
             tile.draw(screen)
+        for tile in self._ornament:
+            tile.draw(screen)
+        for tile in self._goal:
+            tile.draw(screen)
+        
 
     def detect_tile_collision(self, entity_rect: pygame.Rect) -> Tile | None:
         for tile in self._tiles:
@@ -104,6 +120,11 @@ class GameMap:
                 return Vector2D(pos1[0], pos1[1])
         return None
 
+    def detect_goal_collision(self, entity_rect: pygame.Rect) -> bool:
+        for tile in self._goal:
+            if tile.rect.colliderect(entity_rect):
+                return True
+        return False
 
 
 def main():

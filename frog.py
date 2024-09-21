@@ -1,6 +1,8 @@
+import math
 from pygame import Rect, Surface
 import pygame
 from animator import Animator
+from audio_manager import AudioManager
 from config import Config
 from grappling_tongue import GrapplingTongue
 from physics import PhysicsComponent
@@ -12,13 +14,17 @@ import time
 
 
 class Frog:
-    def __init__(self, run_sprite_sheet, idle_sprite_sheet, px: int, py: int, size: float = 1) -> None:
+    def __init__(self, run_sprite_sheet, idle_sprite_sheet, px: int, py: int, size: float = 1, audio_manager: AudioManager = AudioManager()) -> None:
         self.run_sprite_sheet: Surface = load_img(run_sprite_sheet)
         self.idle_sprite_sheet: Surface = load_img(idle_sprite_sheet)
         self.rect: Rect = pygame.rect.Rect(px, py, Config.FROG_WIDTH * size, Config.FROG_HEIGHT * size)
         self.max_velocity = Config.FROG_SPEED
         self.position: Vector2D = Vector2D(px, py)
         self.physics: PhysicsComponent = PhysicsComponent(parent=self)
+
+        self._is_dead = False
+        self._was_jumping = False
+        self.pressed_tongue = False
 
         self.grappling_tongue = GrapplingTongue(self)
 
@@ -28,6 +34,7 @@ class Frog:
         self.jump_frames = self.init_sprite_sheet(self.run_sprite_sheet, 1, size, offset=3)
 
         self.animator = Animator(run_frames=self.run_frames, idle_frames=self.idle_frames, jump_frames=self.jump_frames, starting_animation="idle")
+        self.audio_manager = audio_manager
 
     def fixed_update(self, level: GameMap) -> None:
         self.grappling_tongue.fixed_update(level=level)
@@ -60,7 +67,7 @@ class Frog:
         elif pressed_keys[pygame.K_DOWN]:
             self.grappling_tongue.extend_tongue()
 
-        if pressed_keys[pygame.K_z]:
+        if pressed_keys[pygame.K_x]:
             if self.pressed_tongue == False:
                 self.pressed_tongue = True
                 if not self.grappling_tongue.is_moving() and not self.grappling_tongue.is_extended():
@@ -69,14 +76,19 @@ class Frog:
                     if direction.x == 0 and direction.y == 0:
                         direction.x = 1 if self.animator.facing_right else -1
                     self.grappling_tongue.launch_tongue(direction)
+                    self.audio_manager.play_throw_tongue()
                 elif not self.grappling_tongue.is_moving():
                     self.grappling_tongue.retrieve_tongue()
+                    self.audio_manager.play_retrieve_tongue()
         else:
             self.pressed_tongue = False
 
-        if pressed_keys[pygame.K_x]:
+        if pressed_keys[pygame.K_z]:
             if not self.is_jumping(level):
-                self.start_jump()
+                if pressed_keys[pygame.K_RIGHT] or pressed_keys[pygame.K_LEFT]:
+                    self.start_jump(sideways=True, going_right=pressed_keys[pygame.K_RIGHT])
+                else:
+                    self.start_jump()
     
     def command_move(self, right: bool, level: GameMap):
         flag_sign = 1 if right else -1
@@ -90,8 +102,13 @@ class Frog:
         self.is_moving = True
 
             
-    def start_jump(self) -> None:
-        self.physics.velocity.y = -Config.JUMP_SPEED
+    def start_jump(self, sideways: bool = False, going_right: bool = False) -> None:
+        if not sideways:
+            self.physics.velocity.y = -Config.JUMP_SPEED
+        else:
+            # Jump 60°
+            self.physics.velocity.y = -Config.JUMP_SPEED*math.sin(math.pi/2.5)
+            self.physics.velocity.x = Config.JUMP_SPEED*math.cos(math.pi/2.5) * (1 if going_right else -1)
 
 
     #### ANIMATION ####
@@ -195,6 +212,7 @@ class Frog:
             self.position.y = 0
             self.physics.velocity.y = 0
         if self.position.y > Config.SCREEN_HEIGHT - self.rect.height:
+            self._is_dead = True
             self.position.y = Config.SCREEN_HEIGHT - self.rect.height
             self.physics.velocity.y = 0
         self.rect.x = int(self.position.x)
@@ -203,5 +221,18 @@ class Frog:
     def is_jumping(self, level: GameMap) -> bool:
         collided_tile: Tile = level.detect_tile_collision(pygame.rect.Rect(self.rect.x, self.rect.y + 2, self.rect.width, self.rect.height))
         if collided_tile and collided_tile.rect.top < self.rect.bottom+2 and collided_tile.rect.top > self.rect.bottom-2:
-            return False
-        return True
+            is_jumping = False
+        else:
+            is_jumping = True
+
+        if is_jumping and not self._was_jumping:
+            self.audio_manager.play_jump_sound()
+            self._was_jumping = True
+        elif not is_jumping and self._was_jumping:
+            self.audio_manager.play_jump_sound()
+            self._was_jumping = False
+
+        return is_jumping
+    
+    def is_dead(self) -> bool:
+        return self._is_dead

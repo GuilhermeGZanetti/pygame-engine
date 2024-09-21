@@ -1,7 +1,7 @@
 from src.base_config import BaseConfig
 
 class Config(BaseConfig):
-    SCREEN_WIDTH = 1422
+    SCREEN_WIDTH = 1440
     SCREEN_HEIGHT = 800
     TILE_SIZE = 16
     SCALE = 2
@@ -16,17 +16,19 @@ class Config(BaseConfig):
     FROG_HEIGHT = 24
     FROG_SCALE = 2
 
+    NUMBER_OF_LEVELS = 2
+
     #ANIMATION
     ANIMATION_SPEED=0.1
 
     #Gameplay Frog
-    GRAVITY = 700
+    GRAVITY = 900
     DRAG = 1/10
     FIXED_DRAG = 5
-    FROG_SPEED = 100
-    FROG_ACCELERATION = 700
-    FROG_AIR_FORCE = 200
-    JUMP_SPEED = 500
+    FROG_SPEED = 200
+    FROG_ACCELERATION = 900
+    FROG_AIR_FORCE = 300
+    JUMP_SPEED = 400
     TONGUE_CONTROL = 50
     TONGUE_ELASTIC_CONSTANT = 100
 
