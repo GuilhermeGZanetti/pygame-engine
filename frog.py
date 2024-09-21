@@ -81,7 +81,8 @@ class Frog:
     def command_move(self, right: bool, level: GameMap):
         flag_sign = 1 if right else -1
         if self.is_jumping(level) and self.grappling_tongue.is_extended():
-            self.physics.apply_force(Vector2D(flag_sign * Config.FROG_AIR_FORCE, 0))
+            # self.physics.apply_force(Vector2D(flag_sign * Config.FROG_AIR_FORCE, 0))
+            self.grappling_tongue.apply_clockwise_force(flag_sign)
         else:
             velocity = self.physics.velocity.x + flag_sign * Config.FROG_ACCELERATION * Time.delta_time
             if abs(velocity) < self.max_velocity:
@@ -138,11 +139,11 @@ class Frog:
                 self.physics.velocity.x = 0
         
         if self.physics.velocity.y > 0:
-            self.physics.velocity.y -= fixed_drag * Time.fixed_delta_time
+            self.physics.velocity.y -= fixed_drag * Time.fixed_delta_time * 10
             if self.physics.velocity.y < 0:
                 self.physics.velocity.y = 0
         elif self.physics.velocity.y < 0:
-            self.physics.velocity.y += fixed_drag * Time.fixed_delta_time
+            self.physics.velocity.y += fixed_drag * Time.fixed_delta_time * 10
             if self.physics.velocity.y > 0:
                 self.physics.velocity.y = 0
         

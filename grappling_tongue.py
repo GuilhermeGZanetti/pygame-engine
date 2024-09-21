@@ -23,6 +23,16 @@ class GrapplingTongue:
     
     def is_extended(self):
         return self.is_launched
+    
+    def apply_clockwise_force(self, flag_counterclock: int):
+        tongue_direction = (Vector2D(*self.parent.rect.center) - self.line.end_point).normalize()
+
+        if flag_counterclock == 1:
+            force_direction = Vector2D(tongue_direction.y, -tongue_direction.x)
+        else:
+            force_direction = Vector2D(-tongue_direction.y, +tongue_direction.x)
+        force = force_direction * Config.FROG_AIR_FORCE
+        self.parent.physics.apply_force(force)
 
     def launch_tongue(self, direction: Vector2D):
         self.is_launching = True
@@ -86,9 +96,11 @@ class GrapplingTongue:
             tension_force = Vector2D(0,0)
             # Força de mola na lngua
             if distance > self.tongue_len:
-                K = 50
-                tension_force = -K*(distance-self.tongue_len)*line_direction
+                tension_force = -Config.TONGUE_ELASTIC_CONSTANT*(distance-self.tongue_len)*line_direction
                 self.parent.physics.apply_force(tension_force)
+
+            # Reduz componente da velocidade paralela à lingua
+            self.parent.physics.velocity -= ((self.parent.physics.velocity.dot(line_direction)) * line_direction * Time.fixed_delta_time)*2
 
             self.line.start_point = Vector2D(*self.parent.rect.center)
 
