@@ -33,6 +33,20 @@ class GrapplingTongue:
         self.is_retrieving = True
         self.is_launched = False
 
+    def retract_tongue(self):
+        if self.is_extended():
+            tongue_change = Config.TONGUE_CONTROL * self.parent.delta_time
+            self.tongue_len -= tongue_change
+            line_direction = (Vector2D(*self.parent.rect.center) - self.line.end_point).normalize()
+            self.parent.rect.center = (Vector2D(*self.parent.rect.center) - line_direction * tongue_change).as_tuple()
+
+    def extend_tongue(self):
+        if self.is_extended():
+            tongue_change = Config.TONGUE_CONTROL * self.parent.delta_time
+            self.tongue_len += tongue_change
+            line_direction = (Vector2D(*self.parent.rect.center) - self.line.end_point).normalize()
+            self.parent.rect.center = (Vector2D(*self.parent.rect.center) + line_direction * tongue_change).as_tuple()
+
     def update(self, screen: pygame.Surface, level: GameMap):
         if self.is_launching:
             # Increase tongue length until limit
@@ -69,24 +83,13 @@ class GrapplingTongue:
             # Calculate the vector from the tongue's end point to the parent's position
             vector_to_parent = Vector2D(*self.parent.rect.center) - self.line.end_point
             distance = vector_to_parent.length()
-            tension_force = Vector2D(0,0)
-            # Check if the parent is beyond the maximum tongue length
-            # if distance > self.tongue_len:
-            # Get the line direction (from start to end point)
             line_direction = vector_to_parent.normalize()
-            # Calculate tongue tension (component of gravity in the direction of line_direction)
-            # T = Fcp + Py
-            tangent_velocity = self.parent.physics.velocity.dot(Vector2D(line_direction.y, -line_direction.x).normalize())
-            centripetal_force = (tangent_velocity**2)/distance
-            tension_force = (centripetal_force + Vector2D(0,Config.GRAVITY).dot(-line_direction))*line_direction
-            #Apply force parent
-            self.parent.physics.apply_force(tension_force)
-
+            tension_force = Vector2D(0,0)
             # Força de mola na lngua
             if distance > self.tongue_len:
-                K = 10
-                spring_force = -K*(distance-self.tongue_len)*line_direction
-                self.parent.physics.apply_force(spring_force)
+                K = 50
+                tension_force = -K*(distance-self.tongue_len)*line_direction
+                self.parent.physics.apply_force(tension_force)
 
             self.line.start_point = Vector2D(*self.parent.rect.center)
             self.line.draw(screen)                

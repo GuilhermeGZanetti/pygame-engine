@@ -50,6 +50,8 @@ class Vector2D:
     
     def normalize(self):
         size = self.tamanho()
+        if size == 0:
+            return Vector2D(0, 0)
         self.x = self.x / size
         self.y = self.y / size
 

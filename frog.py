@@ -53,11 +53,16 @@ class Frog:
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[pygame.K_LEFT]:
-            self.command_move(right=False)
+            self.command_move(right=False, level=level)
         elif pressed_keys[pygame.K_RIGHT]:
-            self.command_move(right=True)
+            self.command_move(right=True, level=level)
         else:
             self.is_moving = False
+
+        if pressed_keys[pygame.K_UP]:
+            self.grappling_tongue.retract_tongue()
+        elif pressed_keys[pygame.K_DOWN]:
+            self.grappling_tongue.extend_tongue()
 
         if pressed_keys[pygame.K_z]:
             if self.pressed_tongue == False:
@@ -77,11 +82,14 @@ class Frog:
             if not self.is_jumping(level):
                 self.start_jump()
     
-    def command_move(self, right: bool):
+    def command_move(self, right: bool, level: GameMap):
         flag_sign = 1 if right else -1
-        velocity = self.physics.velocity.x + flag_sign * Config.FROG_ACCELERATION * self.delta_time
-        if abs(velocity) < self.max_velocity:
-            self.physics.velocity.x = velocity
+        if self.is_jumping(level) and self.grappling_tongue.is_extended():
+            self.physics.apply_force(Vector2D(flag_sign * Config.FROG_AIR_FORCE, 0))
+        else:
+            velocity = self.physics.velocity.x + flag_sign * Config.FROG_ACCELERATION * self.delta_time
+            if abs(velocity) < self.max_velocity:
+                self.physics.velocity.x = velocity
         self.is_moving = True
 
             
@@ -141,8 +149,8 @@ class Frog:
             if self.physics.velocity.y > 0:
                 self.physics.velocity.y = 0
         
-        # drag_force = -(Config.DRAG * (self.physics.velocity)/2)
-        # self.physics.apply_force(drag_force)
+        drag_force = -(Config.DRAG * (self.physics.velocity)/2)
+        self.physics.apply_force(drag_force)
         gravity_force = Vector2D(0, Config.GRAVITY)
         self.physics.apply_force(gravity_force)
 
