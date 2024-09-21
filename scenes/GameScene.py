@@ -2,6 +2,7 @@ import pygame
 import sys
 from audio_manager import AudioManager
 from frog import Frog
+from scenes.FinalScene import FinalScene
 from src.scene import BaseScene
 from src.tilemap import GameMap, TileList
 from src.utils import load_img
@@ -48,7 +49,7 @@ class GameScene(BaseScene):
             self.exit_scene = True
             next_level = self._level_number+1
             if next_level > Config.NUMBER_OF_LEVELS:
-                self.next_scene = GameScene(screen=self.screen, level=1, audio_manager=self.audio_manager)
+                self.next_scene = FinalScene(screen=self.screen, level=1, audio_manager=self.audio_manager)
             else:
                 self.next_scene = GameScene(screen=self.screen, level=next_level, audio_manager=self.audio_manager)
         if self.player.is_dead():
