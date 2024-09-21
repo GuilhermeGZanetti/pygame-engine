@@ -3,14 +3,14 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "base_tileset.tsx",
+    "activeFile": "fase2.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "file.lastUsedOpenFilter": "Todos os Ficheiros (*)",
     "fileStates": {
         "base_tileset.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 2,
             "scaleInEditor": 2
         },
         "fase0.tmx": {
@@ -31,7 +31,7 @@
         },
         "fase2.tmx": {
             "scale": 1.5,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
                 "x": 348.33333333333337,
                 "y": 220.66666666666669
@@ -63,14 +63,15 @@
         "base_tileset.tsx",
         "fase0.tmx",
         "fase1.tmx",
-        "general_tileset.tsx"
+        "fase2.tmx"
     ],
     "project": "project_tiled_0.tiled-project",
     "recentFiles": [
-        "general_tileset.tsx",
+        "base_tileset.tsx",
         "fase0.tmx",
         "fase1.tmx",
-        "base_tileset.tsx",
+        "fase2.tmx",
+        "general_tileset.tsx",
         "forest_tileset.tsx",
         "oca.tsx"
     ],

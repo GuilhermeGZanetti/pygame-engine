@@ -7,6 +7,7 @@ from src.scene import BaseScene
 from src.tilemap import GameMap, TileList
 from src.utils import load_img
 from config import Config
+from src.vector2d import Vector2D
 
 class GameScene(BaseScene):
     def __init__(self, screen: pygame.surface.Surface, level: int = 1, audio_manager: AudioManager = AudioManager()):
@@ -33,8 +34,7 @@ class GameScene(BaseScene):
 
         pressed_keys = pygame.key.get_pressed()
         # if pressed_keys[pygame.K_r]:
-        #     self.exit_scene = True
-        #     self.next_scene = GameScene(screen=self.screen, level="fase1.json")
+        #     self.player.position = Vector2D(100, 80)
 
         # termina o jogo se acabar o tempo ou se a pessoa clicar
         # no botao de sair
@@ -49,7 +49,7 @@ class GameScene(BaseScene):
             self.exit_scene = True
             next_level = self._level_number+1
             if next_level > Config.NUMBER_OF_LEVELS:
-                self.next_scene = FinalScene(screen=self.screen, level=1, audio_manager=self.audio_manager)
+                self.next_scene = FinalScene(screen=self.screen, audio_manager=self.audio_manager)
             else:
                 self.next_scene = GameScene(screen=self.screen, level=next_level, audio_manager=self.audio_manager)
         if self.player.is_dead():
