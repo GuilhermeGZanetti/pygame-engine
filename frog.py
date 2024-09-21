@@ -4,6 +4,7 @@ from animator import Animator
 from config import Config
 from grappling_tongue import GrapplingTongue
 from physics import PhysicsComponent
+from src.game_time import Time
 from src.tilemap import GameMap, Tile
 from src.utils import load_img
 from src.vector2d import Vector2D
@@ -12,8 +13,6 @@ import time
 
 class Frog:
     def __init__(self, run_sprite_sheet, idle_sprite_sheet, px: int, py: int, size: float = 1) -> None:
-        self.last_time: float = time.time()
-        self.delta_time: float = 0
         self.run_sprite_sheet: Surface = load_img(run_sprite_sheet)
         self.idle_sprite_sheet: Surface = load_img(idle_sprite_sheet)
         self.rect: Rect = pygame.rect.Rect(px, py, Config.FROG_WIDTH * size, Config.FROG_HEIGHT * size)
@@ -30,18 +29,15 @@ class Frog:
 
         self.animator = Animator(run_frames=self.run_frames, idle_frames=self.idle_frames, jump_frames=self.jump_frames, starting_animation="idle")
 
-
-
-    def update(self, screen: Surface, level: GameMap) -> None:
-        self.delta_time = time.time() - self.last_time
-        self.last_time = time.time()
-
-        self.handle_input(level)
-
-        self.grappling_tongue.update(screen=screen, level=level)
+    def fixed_update(self, level: GameMap) -> None:
+        self.grappling_tongue.fixed_update(level=level)
         self.apply_physics(level=level)
         self.move_and_apply_collisions(level=level)
         self.verify_screen_bounds()
+
+
+    def update(self, screen: Surface, level: GameMap) -> None:
+        self.handle_input(level)        
 
         self.animate(level=level)
         self.draw(screen)
@@ -87,7 +83,7 @@ class Frog:
         if self.is_jumping(level) and self.grappling_tongue.is_extended():
             self.physics.apply_force(Vector2D(flag_sign * Config.FROG_AIR_FORCE, 0))
         else:
-            velocity = self.physics.velocity.x + flag_sign * Config.FROG_ACCELERATION * self.delta_time
+            velocity = self.physics.velocity.x + flag_sign * Config.FROG_ACCELERATION * Time.delta_time
             if abs(velocity) < self.max_velocity:
                 self.physics.velocity.x = velocity
         self.is_moving = True
@@ -102,7 +98,7 @@ class Frog:
         self.animator.update(
             velocity=self.physics.velocity, 
             is_jumping=self.is_jumping(level), 
-            delta_time=self.delta_time, 
+            delta_time=Time.delta_time, 
             is_running=self.is_moving
         )
             
@@ -120,6 +116,7 @@ class Frog:
     #### DRAWING ####
 
     def draw(self, screen: Surface) -> None:
+        self.grappling_tongue.draw(screen=screen)
         screen.blit(self.animator.current_image, self.rect)
         # Draw red rectangle for debug
         # pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
@@ -132,20 +129,20 @@ class Frog:
     def apply_physics(self, level: GameMap) -> None:
         fixed_drag = Config.FIXED_DRAG if self.is_jumping(level) else Config.FIXED_DRAG * 50
         if self.physics.velocity.x > 0:
-            self.physics.velocity.x -= fixed_drag * self.delta_time
+            self.physics.velocity.x -= fixed_drag * Time.fixed_delta_time
             if self.physics.velocity.x < 0:
                 self.physics.velocity.x = 0
         elif self.physics.velocity.x < 0:
-            self.physics.velocity.x += fixed_drag * self.delta_time
+            self.physics.velocity.x += fixed_drag * Time.fixed_delta_time
             if self.physics.velocity.x > 0:
                 self.physics.velocity.x = 0
         
         if self.physics.velocity.y > 0:
-            self.physics.velocity.y -= fixed_drag * self.delta_time
+            self.physics.velocity.y -= fixed_drag * Time.fixed_delta_time
             if self.physics.velocity.y < 0:
                 self.physics.velocity.y = 0
         elif self.physics.velocity.y < 0:
-            self.physics.velocity.y += fixed_drag * self.delta_time
+            self.physics.velocity.y += fixed_drag * Time.fixed_delta_time
             if self.physics.velocity.y > 0:
                 self.physics.velocity.y = 0
         
@@ -154,12 +151,12 @@ class Frog:
         gravity_force = Vector2D(0, Config.GRAVITY)
         self.physics.apply_force(gravity_force)
 
-        self.physics.update(delta_time=self.delta_time)
+        self.physics.update(delta_time=Time.fixed_delta_time)
 
 
     def move_and_apply_collisions(self, level: GameMap) -> None:
         # Move in x direction
-        self.position.x += self.physics.velocity.x * self.delta_time
+        self.position.x += self.physics.velocity.x * Time.fixed_delta_time
         self.rect.x = int(self.position.x)  # Update rect x position
 
         collided_tile: Tile | None = level.detect_tile_collision(self.rect)
@@ -172,7 +169,7 @@ class Frog:
         self.rect.x = int(self.position.x)  # Update rect after collision resolution
 
         # Move in y direction
-        self.position.y += self.physics.velocity.y * self.delta_time
+        self.position.y += self.physics.velocity.y * Time.fixed_delta_time
         self.rect.y = int(self.position.y)  # Update rect y position
 
         collided_tile = level.detect_tile_collision(self.rect)

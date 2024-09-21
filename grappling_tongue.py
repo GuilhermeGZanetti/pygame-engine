@@ -1,6 +1,7 @@
 import pygame
 
 from config import Config
+from src.game_time import Time
 from src.line import Line
 from src.tilemap import GameMap
 from src.vector2d import Vector2D
@@ -35,23 +36,23 @@ class GrapplingTongue:
 
     def retract_tongue(self):
         if self.is_extended():
-            tongue_change = Config.TONGUE_CONTROL * self.parent.delta_time
+            tongue_change = Config.TONGUE_CONTROL * Time.delta_time
             self.tongue_len -= tongue_change
             line_direction = (Vector2D(*self.parent.rect.center) - self.line.end_point).normalize()
             self.parent.rect.center = (Vector2D(*self.parent.rect.center) - line_direction * tongue_change).as_tuple()
 
     def extend_tongue(self):
         if self.is_extended():
-            tongue_change = Config.TONGUE_CONTROL * self.parent.delta_time
+            tongue_change = Config.TONGUE_CONTROL * Time.delta_time
             self.tongue_len += tongue_change
             line_direction = (Vector2D(*self.parent.rect.center) - self.line.end_point).normalize()
             self.parent.rect.center = (Vector2D(*self.parent.rect.center) + line_direction * tongue_change).as_tuple()
 
-    def update(self, screen: pygame.Surface, level: GameMap):
+    def fixed_update(self, level: GameMap):
         if self.is_launching:
             # Increase tongue length until limit
             self.line.start_point = Vector2D(*self.parent.rect.center)
-            self.tongue_point += self.direction * (Config.TONGUE_VELOCITY * self.parent.delta_time)
+            self.tongue_point += self.direction * (Config.TONGUE_VELOCITY * Time.fixed_delta_time)
             self.line.end_point = self.tongue_point
             
             # Check tongue collision with tilemap
@@ -64,21 +65,19 @@ class GrapplingTongue:
             elif self.line.length() > Config.MAX_TONGUE_LENGTH:
                 self.is_launching = False
                 self.is_retrieving = True
-            # print(f"Tongue point: {self.direction * (Config.TONGUE_VELOCITY * self.parent.delta_time)} // Direction: {self.direction} // Config: {Config.TONGUE_VELOCITY} // Time: {self.parent.delta_time} // Tongue len: ", self.line.length())
+            # print(f"Tongue point: {self.direction * (Config.TONGUE_VELOCITY * Time.fixed_delta_time)} // Direction: {self.direction} // Config: {Config.TONGUE_VELOCITY} // Time: {Time.fixed_delta_time} // Tongue len: ", self.line.length())
 
             # Draw tongue
-            self.line.draw(screen)
         elif self.is_retrieving:
             #Return tongue
             self.line.start_point = Vector2D(*self.parent.rect.center)
-            self.tongue_point += (self.line.start_point - self.tongue_point).normalize() * (Config.TONGUE_VELOCITY * self.parent.delta_time)
+            self.tongue_point += (self.line.start_point - self.tongue_point).normalize() * (Config.TONGUE_VELOCITY * Time.fixed_delta_time)
             self.line.end_point = self.tongue_point
 
             if self.line.length() < 3:
                 self.is_retrieving = False
                 del(self.line)
                 return
-            self.line.draw(screen)
         elif self.is_launched:
             # Calculate the vector from the tongue's end point to the parent's position
             vector_to_parent = Vector2D(*self.parent.rect.center) - self.line.end_point
@@ -92,6 +91,7 @@ class GrapplingTongue:
                 self.parent.physics.apply_force(tension_force)
 
             self.line.start_point = Vector2D(*self.parent.rect.center)
-            self.line.draw(screen)                
-            Line(self.line.start_point, self.line.start_point+tension_force*1/10).draw(screen, color=(0,255,0), width=2)
 
+    def draw(self, screen: pygame.Surface):
+        if self.is_moving() or self.is_extended():
+            self.line.draw(screen)

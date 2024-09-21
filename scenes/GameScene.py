@@ -37,8 +37,9 @@ class GameScene(BaseScene):
             pygame.quit()
             sys.exit(0)
 
-    def update_states(self):
+    def fixed_update(self):
         """ Update game state """
+        self.player.fixed_update(self._level)
        
     def draw(self):
         """ draw the scene """
