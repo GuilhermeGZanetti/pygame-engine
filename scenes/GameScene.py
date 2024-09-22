@@ -33,8 +33,8 @@ class GameScene(BaseScene):
                 sair = True
 
         pressed_keys = pygame.key.get_pressed()
-        # if pressed_keys[pygame.K_r]:
-        #     self.player.position = Vector2D(100, 80)
+        if pressed_keys[pygame.K_r]: # Apertar R para roubar e chegar perto das OCAs (para testes)
+            self.player.position = Vector2D(100, 80)
 
         # termina o jogo se acabar o tempo ou se a pessoa clicar
         # no botao de sair
